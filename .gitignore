@@ -1,0 +1,36 @@
+# Abhängigkeiten / Build
+node_modules/
+frontend/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Laufzeitdaten und Geheimnisse (nie einchecken)
+data/*
+!data/.gitkeep
+certs/*
+!certs/.gitkeep
+!certs/README.md
+.env
+*.pem
+*.key
+
+# Testergebnisse
+e2e/test-results/
+e2e/playwright-report/
+backend/.pytest_cache/
+
+# Echte Inventar-/Kundenlisten bleiben lokal (Excel nur als Vorlage unter docs/)
+/*.xlsx
+/*.xls
+/*.csv
+!docs/import-vorlagen/*.xlsx
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vite-Cache
+.vite/

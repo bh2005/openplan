@@ -1,0 +1,15 @@
+# Dev-Image fürs Backend: nur Abhängigkeiten, Code kommt per Volume (siehe docker-compose.dev.yml)
+FROM python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY certs/ /tmp/certs/
+RUN cp /tmp/certs/*.crt /usr/local/share/ca-certificates/ 2>/dev/null; update-ca-certificates; rm -rf /tmp/certs
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    PYTHONUNBUFFERED=1
+WORKDIR /app/backend
+COPY backend/requirements-dev.txt backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements-dev.txt
+EXPOSE 8080
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]

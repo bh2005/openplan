@@ -1,0 +1,46 @@
+# Entwicklung mit Hot-Reload:  docker compose -f docker-compose.dev.yml up --build
+#   Frontend (Vite, HMR):  http://localhost:5173   <- hier entwickeln
+#   Backend  (uvicorn --reload, Swagger unter /docs):  http://localhost:8765
+# Tests:  docker compose -f docker-compose.dev.yml exec backend python -m pytest
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "127.0.0.1:8765:8080"
+    volumes:
+      - ./backend:/app/backend          # Code live editierbar
+      - openplan-dev-data:/app/data     # eigene Dev-DB, getrennt von ./data (Prod-Test auf 8083)
+    environment:
+      - DATA_DIR=/app/data
+      - TZ=Europe/Berlin
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-openplan-dev-1}
+      - WATCHFILES_FORCE_POLLING=true   # Datei-Events auf Windows-Bind-Mounts unzuverlässig
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app/frontend
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+      - frontend-node-modules:/app/frontend/node_modules   # Linux-node_modules, nicht vom Windows-Host
+    environment:
+      - API_URL=http://backend:8080
+      - VITE_POLL=1                     # Polling statt inotify (Windows-Bind-Mount)
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  openplan-dev-data:
+  frontend-node-modules:

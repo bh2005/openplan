@@ -1,0 +1,80 @@
+﻿:root {
+  --bg: #ffffff; --bg-head: #f3f5f8; --bg-top: #14213d; --bg-input: #fff; --fg: #1b2330; --fg-dim: #5b6677;
+  --border: #dde2ea; --accent: #1f6feb; --ok: #2da44e; --chip: #e8ecf2;
+  --row-alt: rgba(0, 0, 0, .025); --row-alt-solid: #fafbfc; --row-sel: rgba(31, 111, 235, .13); --row-sel-solid: #e4eefc;
+  --off: rgba(0, 0, 0, .045); --today: #e5484d; --dep: #5b6677;
+  --blocked: #d97706; --bar: #3b82f6; --bar-critical: #dc2626; --bar-near: #f59e0b; --bar-summary: #1f2937; --bar-ms: #7c3aed; --prog: rgba(0, 0, 0, .38); --baseline: #9aa4b2;
+}
+/* Darstellung: data-theme="light"|"dark" erzwingt den Modus, ohne Attribut gilt die Systemeinstellung */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1419; --bg-head: #161c24; --bg-top: #0b1020; --bg-input: #0f1419; --fg: #e6edf3; --fg-dim: #8b97a7;
+    --border: #2a323d; --accent: #4493f8; --chip: #1e2631;
+    --row-alt: rgba(255, 255, 255, .025); --row-alt-solid: #121820; --row-sel: rgba(68, 147, 248, .18); --row-sel-solid: #14263f;
+    --off: rgba(255, 255, 255, .04); --dep: #8b97a7;
+    --blocked: #f59e0b; --bar: #4c8dff; --bar-summary: #cbd5e1; --bar-ms: #a78bfa; --prog: rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+    --bg: #0f1419; --bg-head: #161c24; --bg-top: #0b1020; --bg-input: #0f1419; --fg: #e6edf3; --fg-dim: #8b97a7;
+    --border: #2a323d; --accent: #4493f8; --chip: #1e2631;
+    --row-alt: rgba(255, 255, 255, .025); --row-alt-solid: #121820; --row-sel: rgba(68, 147, 248, .18); --row-sel-solid: #14263f;
+    --off: rgba(255, 255, 255, .04); --dep: #8b97a7;
+    --blocked: #f59e0b; --bar: #4c8dff; --bar-summary: #cbd5e1; --bar-ms: #a78bfa; --prog: rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+h2, h3 { margin: 0 0 8px; }
+a { color: var(--accent); }
+button, select, input, textarea { font: inherit; color: var(--fg); }
+button { background: var(--bg-head); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { color: var(--bar-critical); }
+button.ghost { background: transparent; }
+input:not([type=checkbox]), select, textarea { background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); border-color: var(--accent); }
+.modal-back { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 12px; }
+.modal { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; width: 560px; max-width: 100%; max-height: 92vh; overflow: auto; }
+.modal label { display: block; margin-bottom: 10px; font-size: 13px; color: var(--fg-dim); }
+.modal label input:not([type=checkbox]), .modal label select, .modal label textarea { display: block; width: 100%; margin-top: 3px; color: var(--fg); }
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.modal label.chk { display: inline-flex; margin: 0; }
+@media (max-width: 700px) {
+  .modal-back { padding: 0; align-items: flex-end; }
+  .modal { width: 100%; max-width: 100%; max-height: 94vh; border-radius: 14px 14px 0 0; padding: 14px 14px 0; }
+  .modal .actions { position: sticky; bottom: 0; background: var(--bg); padding: 10px 0 12px; margin-top: 10px; border-top: 1px solid var(--border); z-index: 2; }
+  .modal .row2, .modal .row3, .modal .row2s { grid-template-columns: 1fr !important; }
+  button, select, input:not([type=checkbox]) { min-height: 34px; }
+  input, select, textarea { font-size: 16px; }              /* verhindert Zoomen beim Fokussieren (iOS) */
+}
+
+
+/* ── Hilfe-Inhalte (Panel und Handbuch) ── */
+.help-body { font-size: 13.5px; line-height: 1.65; color: var(--fg); }
+.help-body h2 { font-size: 20px; margin: 0 0 12px; }
+.help-body h3 { font-size: 12.5px; font-weight: 700; color: var(--fg-dim); margin: 18px 0 6px; text-transform: uppercase; letter-spacing: .04em; }
+.help-body p { margin: 0 0 10px; }
+.help-body ul, .help-body ol { margin: 0 0 10px; padding-left: 20px; }
+.help-body li { margin-bottom: 4px; }
+.help-body table { width: 100%; border-collapse: collapse; margin: 0 0 12px; font-size: 12.5px; }
+.help-body th { background: var(--bg-head); padding: 5px 8px; text-align: left; font-weight: 600; border: 1px solid var(--border); }
+.help-body td { padding: 5px 8px; border: 1px solid var(--border); vertical-align: top; }
+.help-body code { background: var(--chip); padding: 1px 5px; border-radius: 3px; font-size: 12px; font-family: ui-monospace, Consolas, monospace; }
+.help-body hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.help-body mark { background: #fde68a; color: #000; padding: 0 2px; border-radius: 2px; }
+.help-body .help-tip { background: color-mix(in srgb, var(--accent) 12%, transparent); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 12.5px; margin: 12px 0 0; }
+
+@media print {
+  .no-print { display: none !important; }
+  html, body, #app, .app, main { height: auto !important; overflow: visible !important; display: block !important; }
+  body { background: #fff; color: #000; }
+  .hv, .hv-main { display: block !important; overflow: visible !important; height: auto !important; }
+  .help-body { color: #000; page-break-inside: auto; } .help-body h2 { page-break-before: always; } .help-body:first-child h2 { page-break-before: avoid; }
+  .help-body table, .help-body .help-tip { page-break-inside: avoid; }
+}

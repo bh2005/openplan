@@ -1,0 +1,35 @@
+services:
+  openplan:
+    image: openplan:latest
+    build: .
+    ports:
+      # Nur lokal erreichbar – TLS terminiert ein vorgeschalteter Reverse-Proxy (nginx/Caddy)
+      - "127.0.0.1:${PORT:-8083}:8080"
+      # HTTPS (TLS_PORT) und ACME-HTTP-01 (die CA ruft http://<Domain>:80/.well-known/acme-challenge/ ab):
+      # - "8443:8443"
+      # - "80:8080"
+    volumes:
+      - ./data:/app/data            # SQLite-DB + JWT-Secret (persistent; Owner uid 10001)
+      - ./.env:/app/.env            # Verwaltung -> Server-Umgebung bearbeitet diese Datei (Besitzer uid 10001)
+    environment:
+      - TZ=Europe/Berlin
+      - ENV_FILE=/app/.env          # beim Start gelesen, hat Vorrang vor der Compose-Umgebung
+      - ALLOW_SELF_RESTART=1        # Neustart aus der Verwaltung (restart: unless-stopped startet neu)
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}   # leer = Zufallspasswort im Log (docker compose logs)
+      # Server-Zertifikat (ACME, Verwaltung → Server-Zertifikat): HTTPS-Listener, sobald ein Zertifikat vorliegt
+      # - TLS_PORT=8443
+      # Active Directory / LDAP: lässt sich auch in der Verwaltung pflegen (dort gespeicherte Werte haben Vorrang): lokaler Admin bleibt als Notzugang bestehen
+      # - LDAP_URL=ldaps://dc.corp.example:636
+      # - LDAP_BASE_DN=DC=corp,DC=example
+      # - LDAP_DOMAIN=corp.example              # UPN-Bind (user@domain); alternativ LDAP_BIND_DN + LDAP_BIND_PASSWORD
+      # - LDAP_CA_FILE=/app/certs/ca.pem        # interne CA für LDAPS (Datei per Volume einbinden)
+      # - LDAP_REQUIRED_GROUP=CN=OpenPlan-Users,OU=Groups,DC=corp,DC=example
+      # - LDAP_ADMIN_GROUP=CN=OpenPlan-Admins,OU=Groups,DC=corp,DC=example
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

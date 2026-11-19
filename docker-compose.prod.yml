@@ -1,0 +1,38 @@
+# Produktiv-Betrieb auf einer eigenen VM (z. B. eine eigene VM): HTTP :80 (ACME-HTTP-01 + Weiterleitung) und HTTPS :443 (Zertifikat per ACME).
+# Das Image wird nicht aus einer Registry gezogen, sondern bereitgestellt:  docker save openplan:latest | gzip | ssh <vm> 'gunzip | sudo docker load'
+# Start:   cd /opt/openplan && docker compose up -d --no-build
+# Dateien: .env (ADMIN_PASSWORD …, chmod 600) und ./data (Besitzer uid 10001: install -d -o 10001 -g 10001 data)
+services:
+  openplan:
+    image: openplan:latest
+    pull_policy: never
+    ports:
+      - "80:8080"          # HTTP: ACME-Challenge, Health, Weiterleitung auf HTTPS (FORCE_HTTPS)
+      - "443:8443"         # HTTPS mit dem per ACME ausgestellten Zertifikat (TLS_PORT)
+    volumes:
+      - ./data:/app/data   # SQLite-DB, Dokumente, Backups (data/backups), TLS-Zertifikat (data/tls)
+      - ./.env:/app/.env   # Verwaltung -> Server-Umgebung bearbeitet diese Datei (Besitzer uid 10001: chown 10001:10001 .env; chmod 600)
+    env_file: .env
+    environment:
+      - TZ=Europe/Berlin
+      - TLS_PORT=8443
+      - FORCE_HTTPS=1                  # leitet erst um, wenn der HTTPS-Listener wirklich läuft (kein Aussperren ohne Zertifikat)
+      - PUBLIC_HTTPS_PORT=443
+      - ENV_FILE=/app/.env             # beim Start gelesen, hat Vorrang vor env_file
+      - ALLOW_SELF_RESTART=1           # Neustart aus der Verwaltung (Prozess beendet sich, restart: unless-stopped startet neu)
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
