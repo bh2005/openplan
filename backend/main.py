@@ -52,7 +52,7 @@ async def lifespan(_app):
     yield
 
 
-app = FastAPI(title="OpenPlan", version="0.13.0", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)   # Dokumentation: apidocs.py (lokal, API_DOCS)
+app = FastAPI(title="OpenPlan", version="0.14.0", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)   # Dokumentation: apidocs.py (lokal, API_DOCS)
 
 # HTTP -> HTTPS: nur wenn FORCE_HTTPS=1 UND der HTTPS-Listener tatsächlich läuft (Marker data/tls/serving). So sperrt man sich nie aus,
 # solange noch kein Zertifikat existiert. Ausgenommen: ACME-HTTP-01 und der Health-Check (Docker/Monitoring).

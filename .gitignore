@@ -2,6 +2,7 @@
 node_modules/
 frontend/dist/
 __pycache__/
+.venv/
 *.pyc
 .pytest_cache/
 

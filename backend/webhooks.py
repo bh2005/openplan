@@ -336,7 +336,7 @@ class TaskEventIn(BaseModel):
     status: Optional[Status] = None
     percent: Optional[float] = Field(None, ge=0, le=100)
     note: Optional[str] = Field(None, max_length=300)           # wird als Status-Notiz gespeichert (z. B. „AWX-Job 4711 erfolgreich“)
-    system: Optional[Literal["servicenow", "awx", "checkmk", "jira", "autopatch"]] = None
+    system: Optional[Literal["servicenow", "awx", "checkmk", "jira", "autopatch", "portwerk"]] = None
     ref: Optional[str] = Field(None, max_length=200)            # zusammen mit ``system``: externe Referenz am Vorgang setzen
     url: str = Field("", max_length=500)
 

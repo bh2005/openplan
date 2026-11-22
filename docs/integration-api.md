@@ -50,7 +50,7 @@ curl -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json" \
      https://…/api/tasks/412/events
 ```
 
-Erlaubte Systeme: `servicenow`, `awx`, `checkmk`, `jira`. Referenzen setzen darf nur ein Bearbeiter. Im Änderungsjournal steht „Rückmeldung (API)“ mit dem Dienstkonto.
+Erlaubte Systeme: `servicenow`, `awx`, `checkmk`, `jira`, `autopatch`, `portwerk`. Referenzen setzen darf nur ein Bearbeiter. Im Änderungsjournal steht „Rückmeldung (API)“ mit dem Dienstkonto.
 
 ## 5. Webhooks (ausgehend)
 

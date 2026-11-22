@@ -17,6 +17,7 @@ const KINDS: { kind: WizardKind; icon: string; title: string; text: string }[] =
   { kind: 'network', icon: '🌐', title: 'Netzwerk-/Geräte-Rollout', text: 'Konzeption, Beschaffung, Rollout je Standort (danach Geräteliste importieren), Abschluss.' },
   { kind: 'migration', icon: '🖥️', title: 'Server-Migration auf neues Cluster', text: 'Analyse, Aufbau Zielumgebung, Pilot, vier Migrationswellen, Hypercare und Rückbau, mit Freigabe-Gates.' },
   { kind: 'release', icon: '🔄', title: 'Transition Release-Wechsel', text: 'Bewertung, Test und Abnahme, Schulung, Cutover, Hypercare und Übergabe in den Betrieb, mit drei Gates.' },
+  { kind: 'patchpanel', icon: '🔌', title: 'Einbau Patchfelder / Verkabelung', text: 'Planung, Montage, Verlegen und Auflegen, Messung, Patchaufträge aus Portwerk, Abnahme.' },
 ]
 const STEPS = ['Art', 'Grunddaten', 'Team', 'Berichte', 'Fertig']
 

@@ -282,6 +282,20 @@ def test_callback_sets_status_ref_and_is_idempotent(c, rx):
     _clear(c)
 
 
+def test_callback_portwerk_reference(c):
+    """Portwerk meldet Status/Fortschritt seiner Patchaufträge und setzt die Referenz ``portwerk: PA-…`` mit Link zurück."""
+    pid = mk(c, "wh-cb-portwerk")["project"]["id"]
+    _, tid = add(c, pid, "PA-0042 Etage 2")
+    body = {"status": "in_progress", "percent": 50, "note": "Portwerk: 2 von 4 Positionen erledigt", "system": "portwerk", "ref": "PA-0042",
+            "url": "https://portwerk.example/workorders/42"}
+    r = c.post("/api/tasks/%d/events" % tid, json=body)
+    assert r.status_code == 200, r.text
+    assert c.get("/api/tasks/%d/refs" % tid).json() == [{"system": "portwerk", "ref": "PA-0042", "url": "https://portwerk.example/workorders/42"}]
+    hit = c.get("/api/projects/%d/lookup" % pid, params={"ref": "PA-0042", "system": "portwerk"})
+    assert hit.status_code == 200 and [i["id"] for i in hit.json()["items"]] == [tid]
+    assert hit.json()["items"][0]["status"] == "in_progress" and hit.json()["items"][0]["refs"]["portwerk"]["ref"] == "PA-0042"
+
+
 def test_callback_with_service_token_rights(c):
     pid = mk(c, "wh-cb-tok")["project"]["id"]
     _, tid = add(c, pid, "A")

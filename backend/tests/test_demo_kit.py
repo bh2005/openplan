@@ -56,6 +56,12 @@ def test_project_wizard_templates_members_and_report(c):
     for kind, marker in (("network", "Standort 1"), ("release", "Cutover")):
         r = ed.post("/api/projects/wizard", json={**body, "kind": kind, "members": [], "name": "W " + kind}).json()
         assert any(marker in t["name"] for t in r["tasks"]), kind
+    # Patchfelder/Verkabelung: Vertrag mit Portwerk – ein Sammelvorgang, dessen Name „Portwerk“ enthält, darunter hängt Portwerk seine Aufträge ein
+    pp = ed.post("/api/projects/wizard", json={**body, "kind": "patchpanel", "members": [], "name": "W patchpanel"})
+    assert pp.status_code == 201, pp.text
+    sec = [t for t in pp.json()["tasks"] if t["summary"] and "portwerk" in t["name"].lower()]
+    assert len(sec) == 1 and sec[0]["name"] == "Patchaufträge (aus Portwerk)"
+    assert any(t["parent_id"] == sec[0]["id"] and t["milestone"] for t in pp.json()["tasks"])          # Meilenstein „Alle Patchaufträge bestätigt“
     e = ed.post("/api/projects/wizard", json={"kind": "empty", "name": "Leer", "start_date": "2026-11-02"}).json()
     assert e["tasks"] == [] and e["project"]["report_enabled"] == 0
     # Prüfungen: Mitglied = Verantwortlicher, doppelt, unbekannter Benutzer, fremder Verantwortlicher nur als Admin

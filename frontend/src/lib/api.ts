@@ -73,7 +73,7 @@ export interface MyTask {
 }
 
 export type DemoKind = 'network' | 'migration' | 'release'
-export type WizardKind = 'empty' | DemoKind
+export type WizardKind = 'empty' | DemoKind | 'patchpanel'
 export interface WizardPayload {
   kind: WizardKind; name: string; description: string; start_date: string; work_days: number[]; holidays: string[]; holiday_state?: string; owner_id?: number
   members: { user_id: number; role: 'editor' | 'viewer' }[]
