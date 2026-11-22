@@ -7,7 +7,7 @@ import { state, toast } from '../lib/store'
 const props = defineProps<{ taskId: number; projectId: number; canEdit: boolean }>()
 const items = ref<TaskRef[]>([])
 const f = reactive({ system: '', ref: '', url: '' })
-const SYSTEMS = ['servicenow', 'awx', 'checkmk', 'jira', 'autopatch']
+const SYSTEMS = ['servicenow', 'awx', 'checkmk', 'jira', 'autopatch', 'portwerk']
 
 async function load() {
   try { items.value = await api.taskRefs(props.taskId) } catch (e) { toast((e as Error).message, 'error') }

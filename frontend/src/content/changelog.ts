@@ -4,6 +4,13 @@ export interface Release { version: string; date: string; title: string; changes
 
 export const releases: Release[] = [
   {
+    version: '0.14.0', date: '2026-11-23', title: 'Anbindung Portwerk',
+    changes: [
+      { kind: 'neu', text: 'Projektart „Einbau Patchfelder / Verkabelung“ im Assistenten „Neues Projekt“: Planung, Montage, Verlegen und Auflegen, Messung, Abschnitt „Patchaufträge (aus Portwerk)“ und Abnahme. Portwerk legt Projekte dieser Art über die API an und hängt seine Patchaufträge unter den Abschnitt.' },
+      { kind: 'neu', text: 'Externe Referenz „portwerk“: Rückmeldungen (POST /api/tasks/{id}/events) dürfen die Referenz portwerk: PA-… mit Link setzen; im Vorgang ist „portwerk“ als System auswählbar.' },
+    ],
+  },
+  {
     version: '0.13.0', date: '2026-11-02', title: 'Board (Kanban)',
     changes: [
       { kind: 'neu', text: 'Neuer Tab „Board“ im Projekt: Vorgänge als Karten in den Spalten Offen, In Arbeit, Blockiert und Erledigt. Karte ziehen (oder das Statusfeld auf der Karte benutzen) ändert den Status – mit denselben Regeln und Rechten wie im Gantt (Mitarbeiter nur eigene Vorgänge). Das Board ist nur eine Sicht auf den Plan und hat keine eigenen Daten.' },

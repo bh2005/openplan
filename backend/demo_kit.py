@@ -357,7 +357,34 @@ def _network(k: "Kit") -> None:
     t("pm3", "Projektabschluss & Lessons Learned", "Project closure & lessons learned", 2, "P1", (), ["a4"])
 
 
-TEMPLATES: Dict[str, Callable[["Kit"], None]] = {"network": _network, "migration": lambda k: _migration(k), "release": lambda k: _release(k)}
+def _patchpanel(k: "Kit") -> None:
+    """Einbau Patchfelder / Verkabelung (Struktur). Unter „Patchaufträge (aus Portwerk)“ hängt Portwerk je Patchauftrag einen Vorgang ein
+    (Vertrag mit Portwerk: Sammelvorgang, dessen Name „Portwerk“ enthält)."""
+    t = k.task
+    t("P1", "Projektmanagement", "Project management")
+    t("pm1", "Kickoff & Projektplanung", "Kick-off & project planning", 1, "P1")
+    t("pm2", "Projektsteuerung & Abstimmung mit dem Betrieb", "Project control & alignment with operations", 20, "P1", (), ["pm1"])
+    t("P2", "Planung", "Planning")
+    t("p1", "Bestandsaufnahme Räume, Racks und Trassen", "Survey of rooms, racks and cable routes", 3, "P2", (), ["pm1"])
+    t("p2", "Patchfeld- und Belegungsplanung (in Portwerk)", "Patch panel and port assignment planning (in Portwerk)", 3, "P2", (), ["p1"])
+    t("p3", "Material bestellen (Patchfelder, Kabel, Etiketten)", "Order material (patch panels, cables, labels)", 2, "P2", (), ["p2"])
+    t("p4", "Freigabe Planung", "Planning approval", 0, "P2", (), ["p3"])
+    t("P3", "Installation", "Installation")
+    t("i1", "Patchfelder und Kabelführungen montieren", "Mount patch panels and cable management", 3, "P3", (), ["p4"])
+    t("i2", "Installationskabel verlegen", "Lay installation cables", 5, "P3", (), ["p4"])
+    t("i3", "Auflegen und beschriften (Kabeletiketten)", "Terminate and label (cable labels)", 3, "P3", (), ["i1", "i2"])
+    t("P4", "Messung & Dokumentation", "Measurement & documentation")
+    t("m1", "Strecken messen, Messprotokolle ablegen", "Test links, file test reports", 2, "P4", (), ["i3"])
+    t("m2", "Bestand in Portwerk erfassen (Geräte, Ports, Kabel)", "Record inventory in Portwerk (devices, ports, cables)", 2, "P4", (), ["i3"])
+    t("PA", "Patchaufträge (aus Portwerk)", "Patch orders (from Portwerk)")
+    t("pa1", "Alle Patchaufträge bestätigt", "All patch orders confirmed", 0, "PA", (), ["m1", "m2"])
+    t("P5", "Abnahme & Übergabe", "Acceptance & handover")
+    t("a1", "Abnahme (Soll/Ist-Abgleich in Portwerk ohne Abweichung)", "Acceptance (Portwerk target/actual check without deviations)", 1, "P5", (), ["pa1"])
+    t("a2", "Übergabe in den Betrieb", "Handover to operations", 0, "P5", (), ["a1"])
+
+
+TEMPLATES: Dict[str, Callable[["Kit"], None]] = {"network": _network, "migration": lambda k: _migration(k), "release": lambda k: _release(k),
+                                                 "patchpanel": _patchpanel}
 
 
 def apply_template(db, user: Dict[str, Any], pid: int, kind: str) -> None:

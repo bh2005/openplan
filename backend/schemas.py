@@ -57,7 +57,7 @@ class ProjectIn(BaseModel):
 
 class WizardIn(BaseModel):
     """Assistent „Neues Projekt“: Projektart, Grunddaten, Team und Berichte in einem Schritt anlegen."""
-    kind: Literal["empty", "network", "migration", "release"] = "empty"
+    kind: Literal["empty", "network", "migration", "release", "patchpanel"] = "empty"
     name: str = Field(min_length=1, max_length=200)
     description: str = Field("", max_length=2000)
     start_date: date
