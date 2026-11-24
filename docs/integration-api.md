@@ -128,3 +128,17 @@ Antwort: `{"applied": n, "items": [{hostname, outcome, match, dns, device, proje
 prüft nur Token, Adresse und Projektzugriff (das nutzt der Testknopf).
 
 Ein Fehler beim Melden beeinflusst den AutoPatch-Job nie; das Ergebnis der letzten Meldung steht in den AutoPatch-Einstellungen unter „OpenPlan“.
+
+## 7. Abwesenheiten aller Benutzer
+
+Für Systeme, die wissen müssen, wer abwesend ist, z. B. Portwerk: dort gelten die Abwesenheiten dann für die Benachrichtigung der Vertretung.
+Erlaubt nur für Administratoren und für API-Zugänge mit der Freigabe **„Abwesenheiten“**. Die Freigabe setzt man in der Verwaltung → API-Zugänge
+beim Anlegen oder später in der Liste (`PATCH /api/admin/tokens/{id}` mit `{"absences": true}`).
+
+```bash
+curl -H "Authorization: Bearer $T" "https://…/api/absences?start=2026-12-01&end=2026-12-31"
+```
+
+Antwort: `{"start", "end", "absences": [{"id", "username", "display_name", "email", "start_date", "end_date", "kind"}]}`.
+Es kommen nur die persönlichen Abwesenheiten (Mein Profil), die den Zeitraum berühren; ohne Angabe gilt heute bis +365 Tage, höchstens 800 Tage.
+Datenschutz: Die Antwort enthält keine Notiz, und `kind` ist `vacation`, `training` oder `other`, denn „Krank“ wird als `other` ausgegeben.

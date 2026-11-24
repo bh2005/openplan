@@ -8,7 +8,7 @@ import { t as tr, locale } from '../lib/i18n'
 
 const items = ref<ApiToken[]>([])
 const projects = ref<Project[]>([])
-const f = reactive({ name: '', username: '', role: 'editor' as 'editor' | 'viewer', scope: 'read' as 'read' | 'write', expires_days: 365, project_ids: [] as number[] })
+const f = reactive({ name: '', username: '', role: 'editor' as 'editor' | 'viewer', scope: 'read' as 'read' | 'write', expires_days: 365, project_ids: [] as number[], absences: false })
 const fresh = ref<{ token: string; username: string } | null>(null)
 const busy = ref(false)
 
@@ -24,7 +24,7 @@ const valid = computed(() => f.name.trim() && f.username.trim().length >= 2 && f
 async function create() {
   busy.value = true
   try {
-    const r = await api.createApiToken({ name: f.name.trim(), username: f.username.trim(), role: f.role, scope: f.scope, project_ids: f.project_ids, expires_days: f.expires_days })
+    const r = await api.createApiToken({ name: f.name.trim(), username: f.username.trim(), role: f.role, scope: f.scope, project_ids: f.project_ids, expires_days: f.expires_days, absences: f.absences })
     fresh.value = { token: r.token, username: r.username }
     f.name = ''
     toast(tr('Zugang erstellt'))
@@ -34,6 +34,9 @@ async function create() {
 async function revoke(t: ApiToken) {
   if (!confirm(tr('Zugang widerrufen? Systeme, die diesen Schlüssel nutzen, verlieren sofort den Zugriff.'))) return
   try { await api.revokeApiToken(t.id); toast(tr('Zugang widerrufen')); await load() } catch (e) { toast((e as Error).message, 'error') }
+}
+async function toggleAbsences(t: ApiToken) {
+  try { await api.updateApiToken(t.id, { absences: !t.absences }); await load() } catch (e) { toast((e as Error).message, 'error') }
 }
 async function copy() {
   try { await navigator.clipboard.writeText(fresh.value!.token); toast(tr('Kopiert')) } catch { /* Markieren genügt */ }
@@ -68,23 +71,25 @@ const example = computed(() => `curl -H "Authorization: Bearer ${fresh.value?.to
         <label class="wide">{{ $t('Projekte (leer = alle des Kontos)') }}
           <select v-model="f.project_ids" multiple size="4"><option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option></select>
         </label>
+        <label class="wide check"><input v-model="f.absences" type="checkbox" /> {{ $t('Darf die Abwesenheiten aller Benutzer lesen (nur Zeitraum und Art, ohne Notiz; „Krank“ erscheint als „Sonstiges“) – z. B. für Portwerk') }}</label>
         <button class="primary" :disabled="busy || !valid">{{ $t('Zugang erstellen') }}</button>
       </form>
     </fieldset>
 
     <table class="tbl">
-      <thead><tr><th>{{ $t('Name des Zugangs') }}</th><th>{{ $t('Konto') }}</th><th>{{ $t('Umfang') }}</th><th>{{ $t('Projekte') }}</th><th>{{ $t('Läuft ab') }}</th><th>{{ $t('Zuletzt benutzt') }}</th><th /></tr></thead>
+      <thead><tr><th>{{ $t('Name des Zugangs') }}</th><th>{{ $t('Konto') }}</th><th>{{ $t('Umfang') }}</th><th>{{ $t('Projekte') }}</th><th>{{ $t('Abwesenheiten') }}</th><th>{{ $t('Läuft ab') }}</th><th>{{ $t('Zuletzt benutzt') }}</th><th /></tr></thead>
       <tbody>
         <tr v-for="t in items" :key="t.id" :class="{ gone: t.expired }">
           <td><b>{{ t.name }}</b><br /><code class="dim">{{ t.prefix }}…</code></td>
           <td>{{ t.username }} <small class="dim">({{ t.role }})</small></td>
           <td>{{ t.scope === 'write' ? $t('lesen und schreiben') : $t('nur lesen') }}</td>
           <td>{{ t.project_ids.length ? t.project_ids.map(pname).join(', ') : $t('alle') }}</td>
+          <td><label class="check" :title="$t('Darf die Abwesenheiten aller Benutzer lesen')"><input type="checkbox" :checked="t.absences" @change="toggleAbsences(t)" /> {{ t.absences ? $t('lesen') : $t('nein') }}</label></td>
           <td>{{ when(t.expires_at) }} <span v-if="t.expired" class="bad">{{ $t('abgelaufen') }}</span></td>
           <td>{{ when(t.last_used_at) }}</td>
           <td class="act"><button type="button" class="danger" @click="revoke(t)">{{ $t('Widerrufen') }}</button></td>
         </tr>
-        <tr v-if="!items.length"><td colspan="7" class="dim">{{ $t('Keine API-Zugänge angelegt.') }}</td></tr>
+        <tr v-if="!items.length"><td colspan="8" class="dim">{{ $t('Keine API-Zugänge angelegt.') }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -97,7 +102,7 @@ const example = computed(() => `curl -H "Authorization: Bearer ${fresh.value?.to
 .keyrow { display: flex; gap: 8px; margin: 6px 0; } .key { flex: 1; font-family: monospace; }
 fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin: 12px 0; } legend { padding: 0 6px; color: var(--fg-dim); font-size: 13px; }
 .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: end; }
-.form label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; } .form .wide { grid-column: 1 / -1; }
+.form label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; } .form .wide { grid-column: 1 / -1; } .form label.check, label.check { flex-direction: row; align-items: center; gap: 6px; }
 .tbl { border-collapse: collapse; width: 100%; margin: 10px 0; }
 .tbl th, .tbl td { text-align: left; padding: 6px; border-bottom: 1px solid var(--border); vertical-align: top; } .act { text-align: right !important; }
 tr.gone td { opacity: .55; }

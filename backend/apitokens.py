@@ -25,11 +25,16 @@ class TokenIn(BaseModel):
     scope: Literal["read", "write"] = "read"
     project_ids: List[int] = []                                  # leer = alle Projekte, die das Konto sehen darf
     expires_days: int = Field(365, ge=1, le=3650)
+    absences: bool = False                                       # darf die Abwesenheiten aller Benutzer lesen (GET /api/absences)
+
+
+class TokenPatch(BaseModel):
+    absences: bool
 
 
 def _row(r) -> dict:
     return {"id": r["id"], "name": r["name"], "username": r["username"], "role": r["role"], "prefix": r["prefix"], "scope": r["scope"],
-            "project_ids": [int(x) for x in r["project_ids"].split(",") if x], "expires_at": r["expires_at"], "expired": bool(r["expired"]),
+            "project_ids": [int(x) for x in r["project_ids"].split(",") if x], "absences": bool(r["absences"]), "expires_at": r["expires_at"], "expired": bool(r["expired"]),
             "last_used_at": r["last_used_at"], "created_by": r["created_by"], "created_at": r["created_at"]}
 
 
@@ -58,15 +63,27 @@ def create_token(body: TokenIn, admin=Depends(require_admin), db=Depends(get_db,
                          (body.username, body.name, "service$" + secrets.token_hex(16), body.role)).lastrowid     # Hash ohne gültiges Format: Passwort-Login unmöglich
         audit.log(db, admin, "user.create", "%s (%s, service)" % (body.username, body.role))
     raw = TOKEN_PREFIX + secrets.token_urlsafe(30)
-    tid = db.execute("INSERT INTO api_tokens(user_id, name, token_hash, prefix, scope, project_ids, expires_at, created_by) "
-                     "VALUES (?,?,?,?,?,?, datetime('now', ?), ?)",
-                     (uid, body.name.strip(), hash_token(raw), raw[:len(TOKEN_PREFIX) + 6], body.scope, ",".join(map(str, ids)),
+    tid = db.execute("INSERT INTO api_tokens(user_id, name, token_hash, prefix, scope, absences, project_ids, expires_at, created_by) "
+                     "VALUES (?,?,?,?,?,?,?, datetime('now', ?), ?)",
+                     (uid, body.name.strip(), hash_token(raw), raw[:len(TOKEN_PREFIX) + 6], body.scope, int(body.absences), ",".join(map(str, ids)),
                       "+%d days" % body.expires_days, admin["username"])).lastrowid
     audit.log(db, admin, "token.create", "%s: Konto %s, %s, %s, %d Tage" % (body.name.strip(), body.username, body.scope,
-                                                                         "Projekte " + ",".join(map(str, ids)) if ids else "alle Projekte", body.expires_days))
+                                                                         "Projekte " + ",".join(map(str, ids)) if ids else "alle Projekte", body.expires_days)
+              + (", Abwesenheiten" if body.absences else ""))
     out = _row(db.execute(_SELECT + " WHERE t.id=?", (tid,)).fetchone())
     out["token"] = raw                    # einmalig – danach nicht mehr abrufbar
     return out
+
+
+@router.patch("/{tid}")
+def update_token(tid: int, body: TokenPatch, admin=Depends(require_admin), db=Depends(get_db, scope="function")):
+    """Nachträglich änderbar: nur die Freigabe „Abwesenheiten aller Benutzer lesen“ (Umfang und Projekte: neuen Zugang anlegen)."""
+    r = db.execute(_SELECT + " WHERE t.id=?", (tid,)).fetchone()
+    if not r:
+        raise HTTPException(404, "Token nicht gefunden")
+    db.execute("UPDATE api_tokens SET absences=? WHERE id=?", (int(body.absences), tid))
+    audit.log(db, admin, "token.update", "%s: Abwesenheiten %s" % (r["name"], "freigegeben" if body.absences else "gesperrt"))
+    return _row(db.execute(_SELECT + " WHERE t.id=?", (tid,)).fetchone())
 
 
 @router.delete("/{tid}")

@@ -54,10 +54,10 @@ export interface EnvState {
   entries: { key: string; secret: boolean; set: boolean; value: string | null }[]
 }
 export interface ApiToken {
-  id: number; name: string; username: string; role: string; prefix: string; scope: 'read' | 'write'; project_ids: number[]
+  id: number; name: string; username: string; role: string; prefix: string; scope: 'read' | 'write'; project_ids: number[]; absences: boolean
   expires_at: string | null; expired: boolean; last_used_at: string | null; created_by: string; created_at: string
 }
-export interface ApiTokenIn { name: string; username: string; role: 'editor' | 'viewer'; scope: 'read' | 'write'; project_ids: number[]; expires_days: number }
+export interface ApiTokenIn { name: string; username: string; role: 'editor' | 'viewer'; scope: 'read' | 'write'; project_ids: number[]; expires_days: number; absences: boolean }
 export interface Webhook {
   id: number; name: string; url: string; events: string[]; project_id: number | null; enabled: boolean; created_by: string
   pending: number; failed: number; last_ok: string | null; secret?: string
@@ -252,6 +252,7 @@ export const api = {
   saveEnv: (entries: { key: string; value: string | null }[]) => req<EnvState>('PUT', '/api/admin/env', { entries }),
   apiTokens: () => req<ApiToken[]>('GET', '/api/admin/tokens'),
   createApiToken: (b: ApiTokenIn) => req<ApiToken & { token: string }>('POST', '/api/admin/tokens', b),
+  updateApiToken: (id: number, b: { absences: boolean }) => req<ApiToken>('PATCH', `/api/admin/tokens/${id}`, b),
   revokeApiToken: (id: number) => req<{ ok: boolean }>('DELETE', `/api/admin/tokens/${id}`),
   taskRefs: (tid: number) => req<TaskRef[]>('GET', `/api/tasks/${tid}/refs`),
   putTaskRef: (tid: number, system: string, b: { ref: string; url: string }) => req<TaskRef & { changed: boolean }>('PUT', `/api/tasks/${tid}/refs/${encodeURIComponent(system)}`, b),

@@ -262,6 +262,7 @@ CREATE TABLE IF NOT EXISTS api_tokens (          -- langlebige Zugangsschlüssel
     token_hash TEXT NOT NULL UNIQUE,
     prefix TEXT NOT NULL,                        -- erste Zeichen, nur zur Anzeige
     scope TEXT NOT NULL DEFAULT 'read' CHECK (scope IN ('read','write')),
+    absences INTEGER NOT NULL DEFAULT 0,         -- 1 = darf die Abwesenheiten aller Benutzer lesen (GET /api/absences, z. B. für Portwerk)
     project_ids TEXT NOT NULL DEFAULT '',        -- kommagetrennt; leer = alle Projekte, die das Konto sehen darf
     expires_at TEXT,
     last_used_at TEXT,
@@ -331,6 +332,9 @@ def _migrate(conn: sqlite3.Connection) -> None:
     ucols = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
     if "email" not in ucols:
         conn.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+    atcols = {r[1] for r in conn.execute("PRAGMA table_info(api_tokens)")}
+    if atcols and "absences" not in atcols:   # Token darf die Abwesenheiten aller Benutzer lesen
+        conn.execute("ALTER TABLE api_tokens ADD COLUMN absences INTEGER NOT NULL DEFAULT 0")
     if "see_all" not in ucols:   # 1 = „Betrachter alle Projekte“ (nur zusammen mit Rolle viewer wirksam)
         conn.execute("ALTER TABLE users ADD COLUMN see_all INTEGER NOT NULL DEFAULT 0")
     if "lang" not in ucols:      # NULL = Standard (Deutsch)
