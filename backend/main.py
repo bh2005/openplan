@@ -23,7 +23,7 @@ from envadmin import router as envadmin_router
 from feiertage import router as holidays_router
 from leveling import router as leveling_router
 from overview import router as overview_router
-from user_absences import router as user_absences_router
+from user_absences import org_router as all_absences_router, router as user_absences_router
 from files_api import router as files_router
 from finance_api import router as finance_router
 from config import FRONTEND_DIST
@@ -89,6 +89,7 @@ app.include_router(dashboard_router)
 app.include_router(leveling_router)
 app.include_router(overview_router)
 app.include_router(user_absences_router)
+app.include_router(all_absences_router)
 app.include_router(apitokens.router)
 app.include_router(refs.router)
 app.include_router(webhooks.router)

@@ -89,7 +89,7 @@ def _rate_ok(token_id: int) -> bool:
 
 def _token_user(request: Request, raw: str, db):
     """Anmeldung per API-Token: Benutzer = Dienstkonto, zusätzlich ``user['token']`` mit Umfang und Projektbeschränkung."""
-    row = db.execute("SELECT t.id AS tid, t.scope, t.project_ids, t.last_used_at, "
+    row = db.execute("SELECT t.id AS tid, t.scope, t.absences, t.project_ids, t.last_used_at, "
                      "(t.expires_at IS NOT NULL AND t.expires_at <= datetime('now')) AS expired, "
                      "(t.last_used_at IS NULL OR t.last_used_at <= datetime('now', '-60 seconds')) AS stale, "
                      "u.auth_source, " + ", ".join("u." + c.strip() for c in _USER_COLS.split(",")) +
@@ -108,7 +108,7 @@ def _token_user(request: Request, raw: str, db):
     if row["stale"]:
         db.execute("UPDATE api_tokens SET last_used_at=datetime('now') WHERE id=?", (row["tid"],))
     user = {c.strip(): row[c.strip()] for c in _USER_COLS.split(",")}
-    user["token"] = {"id": row["tid"], "scope": row["scope"], "projects": projects}
+    user["token"] = {"id": row["tid"], "scope": row["scope"], "projects": projects, "absences": bool(row["absences"])}
     return user
 
 

@@ -7,6 +7,7 @@ nicht mit den projektbezogenen Abwesenheiten (Tabelle ``absences``) überschneid
 """
 from __future__ import annotations
 
+from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -17,6 +18,7 @@ from database import get_db
 from schemas import AbsenceIn
 
 router = APIRouter(prefix="/api/me")
+org_router = APIRouter(prefix="/api")
 
 
 def project_absences(db, pid: int, viewer: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -88,3 +90,33 @@ def delete_mine(aid: int, user=Depends(current_user), db=Depends(get_db, scope="
     db.execute("DELETE FROM user_absences WHERE id=?", (aid,))
     _bump_projects(db, user["id"])
     return _list(db, user["id"])
+
+
+# ── Alle Benutzer (für Fremdsysteme wie Portwerk) ─────────────────────────────
+
+def _may_read_all(user: Dict[str, Any]) -> bool:
+    """Administratoren, sonst nur API-Tokens mit ausdrücklicher Freigabe „Abwesenheiten“ (Verwaltung → API-Zugänge)."""
+    tok = user.get("token")
+    return bool(tok["absences"]) if tok else user["role"] == "admin"
+
+
+@org_router.get("/absences")
+def list_all(start: Optional[date] = None, end: Optional[date] = None, user=Depends(current_user), db=Depends(get_db, scope="function")):
+    """Persönliche Abwesenheiten aller Benutzer, die den Zeitraum ``start``..``end`` berühren (Standard: heute bis +365 Tage).
+    Datenschutz: nur Zeitraum und Art – „Krank“ erscheint als „Sonstiges“, keine Notiz. Dienstkonten haben keine Abwesenheiten."""
+    if not _may_read_all(user):
+        raise HTTPException(403, "Nur für Administratoren oder API-Zugänge mit Freigabe „Abwesenheiten“")
+    start = start or date.today()
+    end = end or start + timedelta(days=365)
+    if end < start:
+        raise HTTPException(422, "Das Ende liegt vor dem Beginn")
+    if (end - start).days > 800:
+        raise HTTPException(422, "Zeitraum zu lang (höchstens 800 Tage)")
+    rows = db.execute(
+        "SELECT ua.id, ua.start_date, ua.end_date, ua.kind, u.username, u.display_name, u.email FROM user_absences ua "
+        "JOIN users u ON u.id=ua.user_id WHERE u.auth_source != 'service' AND ua.end_date >= ? AND ua.start_date <= ? "
+        "ORDER BY u.username, ua.start_date, ua.id", (start.isoformat(), end.isoformat()))
+    return {"start": start.isoformat(), "end": end.isoformat(),
+            "absences": [{"id": r["id"], "username": r["username"], "display_name": r["display_name"], "email": r["email"],
+                          "start_date": r["start_date"], "end_date": r["end_date"], "kind": "other" if r["kind"] == "sick" else r["kind"]}
+                         for r in rows]}
