@@ -23,7 +23,7 @@ import { api, subscribeRevision } from '../lib/api'
 import { dayDiff, fmt, parseDate, WorkCal } from '../lib/dates'
 import { parsePreds } from '../lib/deps'
 import { STATUS } from '../lib/status'
-import { mutate, state, toast, ui } from '../lib/store'
+import { ferdisch, mutate, state, toast, ui } from '../lib/store'
 import type { DirUser, JournalEntry, Task } from '../lib/types'
 import { t as tr, weekdayLong } from '../lib/i18n'
 
@@ -220,7 +220,7 @@ async function setStatus(ids: number[], status: string) {
   const sums = ids.filter(i => byId.value.get(i)?.summary)
   const label = STATUS.find(s => s.value === status)?.label
   if (sums.length && !confirm(tr('Status „{1}“ für alle Teilvorgänge der gewählten Sammelvorgänge setzen?', { 1: label }))) return
-  await mutate(() => api.bulkStatus(pid, ids, status))
+  if ((await mutate(() => api.bulkStatus(pid, ids, status))) && status === 'done') ferdisch()
 }
 function onBulkStatus(e: Event) {
   const el = e.target as HTMLSelectElement

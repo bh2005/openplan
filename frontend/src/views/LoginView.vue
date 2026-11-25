@@ -29,6 +29,7 @@ async function submit() {
     <form class="card" @submit.prevent="submit">
       <img src="/icon.svg" width="56" height="56" alt="" />
       <h2>OpenPlan</h2>
+      <p class="motto" title="Hessisch: „Haben wir es bald?“">– hammersbald?</p>
       <p class="sub">{{ $t('Projektplanung mit Gantt & kritischem Pfad') }}</p>
       <label>{{ $t('Benutzername') }} <input v-model="username" autocomplete="username" autofocus required /></label>
       <label>{{ $t('Passwort') }} <input v-model="password" type="password" autocomplete="current-password" required /></label>
@@ -44,6 +45,7 @@ async function submit() {
 .card { width: 340px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 28px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-head); }
 .card h2 { margin: 0; }
 .sub { margin: 0 0 8px; color: var(--fg-dim); font-size: 13px; }
+.motto { margin: -4px 0 4px; color: var(--fg-dim); font-style: italic; font-size: 14px; }
 label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--fg-dim); }
 .err { color: var(--bar-critical); margin: 0; }
 button { padding: 8px; }

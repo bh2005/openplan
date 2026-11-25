@@ -4,7 +4,7 @@ import { computed, reactive, watch } from 'vue'
 import { api } from '../lib/api'
 import { fmt, parseDate } from '../lib/dates'
 import { depToText, parsePreds } from '../lib/deps'
-import { mutate, state, toast } from '../lib/store'
+import { ferdisch, mutate, state, toast } from '../lib/store'
 import { STATUS } from '../lib/status'
 import TaskDocs from './TaskDocs.vue'
 import TaskRefs from './TaskRefs.vue'
@@ -58,6 +58,7 @@ async function save() {
     else if (f.percent !== t.percent) p.percent = Math.min(100, Math.max(0, f.percent))
     if (f.status === 'blocked' && f.status_note !== t.status_note) p.status_note = f.status_note
     if (Object.keys(p).length && !(await mutate(() => api.patchTask(t.id, p)))) return
+    if (p.status === 'done') ferdisch()
     return emit('close')
   }
   let cdate: string | null = null
@@ -91,6 +92,7 @@ async function save() {
   const items: { resource_id?: number; user_id?: number; units: number }[] = Object.entries(f.assign).filter(([, v]) => v.on).map(([id, v]) => ({ resource_id: Number(id), units: v.units }))
   for (const a of pick.added) items.push({ user_id: a.id, units: a.units })
   if (!(await mutate(() => api.setAssignments(t.id, items)))) return
+  if (patch.status === 'done') ferdisch()
   emit('close')
 }
 </script>

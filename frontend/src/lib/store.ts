@@ -16,6 +16,11 @@ export const state = reactive({
 export const ui = reactive({ tab: 'gantt', sub: 'overview', helpOpen: false })
 
 let toastTimer: number | undefined
+/** Kleine hessische Bestätigung, wenn etwas auf „erledigt“ gesetzt wurde (bewusst in jeder Sprache hessisch). */
+export function ferdisch(detail = '') {
+  toast('Ferdisch! ✓' + (detail ? ' ' + detail : ''))
+}
+
 export function toast(msg: string, kind: 'info' | 'error' = 'info') {
   state.toast = msg
   state.toastKind = kind
