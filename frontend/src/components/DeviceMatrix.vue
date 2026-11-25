@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { api } from '../lib/api'
 import { fmt } from '../lib/dates'
-import { mutate, state, toast } from '../lib/store'
+import { ferdisch, mutate, state, toast } from '../lib/store'
 import { STATUS, STATUS_LABEL } from '../lib/status'
 import type { Task, Template } from '../lib/types'
 import DeviceImport from './DeviceImport.vue'
@@ -82,7 +82,11 @@ function selectGroup(list: Task[]) { for (const dev of list) for (const k of kid
 async function setStatus(status: string) {
   if (!sel.size || !status) return
   const ids = [...sel]
-  if (await mutate(() => api.bulkStatus(props.pid, ids, status))) { toast(tr('{1} Schritt(e) → {2}', { 1: ids.length, 2: STATUS_LABEL[status as keyof typeof STATUS_LABEL] })); sel.clear() }
+  if (await mutate(() => api.bulkStatus(props.pid, ids, status))) {
+    if (status === 'done') ferdisch(tr('{1} Schritt(e)', { 1: ids.length }))
+    else toast(tr('{1} Schritt(e) → {2}', { 1: ids.length, 2: STATUS_LABEL[status as keyof typeof STATUS_LABEL] }))
+    sel.clear()
+  }
 }
 
 // ── Gerät aus Vorlage ──

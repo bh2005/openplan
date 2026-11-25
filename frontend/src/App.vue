@@ -48,7 +48,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); document
   <div class="app">
     <div v-if="!state.online" class="offline">{{ $t('Offline – Änderungen sind nicht möglich, gespeicherte Daten werden angezeigt.') }}</div>
     <header v-if="state.user" class="top no-print">
-      <router-link to="/" class="brand"><img src="/icon.svg" alt="" width="22" height="22" /> OpenPlan</router-link>
+      <router-link to="/" class="brand"><img src="/icon.svg" alt="" width="22" height="22" /> OpenPlan <span class="motto desk" title="Hessisch: „Haben wir es bald?“">– hammersbald?</span></router-link>
       <span class="spacer" />
       <router-link to="/todo" class="lnk desk todo">{{ $t('Meine Aufgaben') }}<span v-if="todo.open" class="tb" :class="{ late: todo.late }" :title="todo.late ? $t('{1} überfällig', { 1: todo.late }) : ''">{{ todo.open }}</span></router-link>
       <div class="dd desk">
@@ -102,6 +102,7 @@ main { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: 
 main > :deep(*) { flex: 1; min-height: 0; }
 .top { display: flex; align-items: center; gap: 14px; padding: 6px 14px; background: var(--bg-top); color: #fff; }
 .brand { color: #fff; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.brand .motto { font-weight: 400; font-style: italic; font-size: 12px; opacity: .6; margin-left: -2px; }
 .spacer { flex: 1; }
 .lnk { color: #cfe0ff; text-decoration: none; font-size: 13px; }
 .dd { position: relative; }

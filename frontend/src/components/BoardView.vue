@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { api } from '../lib/api'
 import { fmt } from '../lib/dates'
-import { mutate, state, toast } from '../lib/store'
+import { ferdisch, mutate, state, toast } from '../lib/store'
 import { STATUS, STATUS_LABEL } from '../lib/status'
 import type { Status, Task } from '../lib/types'
 import { t as tr } from '../lib/i18n'
@@ -110,7 +110,7 @@ async function move(t: Task, status: Status) {
   busy.value = true
   try {
     const ok = await mutate(() => note ? api.patchTask(t.id, { status, status_note: note }) : api.bulkStatus(props.pid, [t.id], status))
-    if (ok) toast(tr('„{1}“ → {2}', { 1: t.name, 2: STATUS_LABEL[status] }))
+    if (ok) status === 'done' ? ferdisch(`„${t.name}“`) : toast(tr('„{1}“ → {2}', { 1: t.name, 2: STATUS_LABEL[status] }))
   } finally { busy.value = false }
 }
 function onSelect(e: Event, t: Task) {

@@ -4,8 +4,7 @@ import { useRouter } from 'vue-router'
 import { api, type MyTask } from '../lib/api'
 import { fmt } from '../lib/dates'
 import { STATUS_LABEL } from '../lib/status'
-import { state, toast } from '../lib/store'
-import { t as tr } from '../lib/i18n'
+import { ferdisch, state, toast } from '../lib/store'
 
 const router = useRouter()
 const items = ref<MyTask[]>([])
@@ -43,7 +42,7 @@ async function done(i: MyTask) {
   try {
     await api.bulkStatus(i.pid, [i.id], 'done')
     items.value = items.value.filter(x => x.id !== i.id)
-    toast(tr('„{1}“ erledigt', { 1: i.name }))
+    ferdisch(`„${i.name}“`)
   } catch (e) { toast((e as Error).message, 'error') } finally { busy.value = 0 }
 }
 const open = (i: MyTask) => router.push(`/project/${i.pid}?task=${i.id}`)
